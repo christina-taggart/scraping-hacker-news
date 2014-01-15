@@ -8,11 +8,15 @@ post = Nokogiri::HTML(open(ARGV[0])) do |config|
   config
 end
 
+# post = Nokogiri::HTML(open(ARGV[0])) do |config|
+#   config
+# end
+
 # post = Nokogiri::HTML(open("post.html")) do |config|
 #   config
 # end
 
-def extracting_something(doc)
+# def extracting_something(doc)
   #doc.search('.subtext > span:first-child').map { |span| span.inner_text}
   # => This returns the subtext point value for the post.
   #doc.search('.subtext > a:nth-child(3)').map {|link| link['href'] }
@@ -27,7 +31,7 @@ def extracting_something(doc)
   #=> This pulls all of the links past the first paragraph within the comment section.
   #doc.search('font > a:first-child').map { |link| link['href'] }
   #=> This pulls out the first links within the comment section.
-end
+# end
 
 class Post
   attr_reader :title, :url, :points, :item_id
@@ -62,7 +66,7 @@ class Post
   end
 
   def extract_usernames(doc)
-    @user_names = doc.search('.comhead > a:first-child').map {|element| element.inner_text }.uniq!
+    @user_names = doc.search('.comhead > a:first-child').map {|element| element.inner_text }.uniq!.join(" ")
   end
 
   def to_s
