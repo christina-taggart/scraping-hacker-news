@@ -1,10 +1,11 @@
 require 'nokogiri'
+require 'open-uri'
 
 class Post
   attr_reader :title, :post_link, :url, :item_id, :comments
   attr_accessor :points
-  def initialize(url)
-    @doc = Nokogiri::HTML(File.open(url))
+  def initialize(url = ARGV.join)
+    @doc = Nokogiri::HTML(open(url))
     @title = get_title
     @url = url
     @item_id = get_item_id
@@ -13,15 +14,15 @@ class Post
   end
 
   def get_title
-    @doc.search('.title > a').map{|title| title.inner_text}.join
+    @doc.search('.title > a').inner_text
   end
 
   def get_points
-    @doc.search('.subtext > span').map{|points| points.inner_text.match(/\d+/).to_s}.join.to_i
+    @doc.search('.subtext > span').inner_text[/\d+/]
   end
 
   def get_item_id
-    @doc.search('.subtext > span').map{|span| span['id'].match(/\d+/).to_s}.join.to_i
+    @doc.search('.subtext > span').to_s.gsub!(/(.+_)(\d+).+/, '\2')
   end
 
   def load_existing_comments
@@ -33,7 +34,24 @@ class Post
     loaded
   end
 
-  def add_comments
+  def add_comment(comment)
+    @comments << comment
+  end
+
+  def print_post_stats
+    puts "Post title: #{title}"
+    puts "#{comments.length} comments, #{points} points"
+  end
+
+  def print_comments
+    @comments.each do |comment|
+      puts "#{comment.username}, #{comment.created_at} | #{comment.permalink} \n #{comment.body}\n\n"
+    end
+  end
+
+  def print
+    print_post_stats
+    print_comments
   end
 
 end
@@ -41,33 +59,34 @@ end
 class Comment
   attr_reader :username, :created_at, :permalink, :body #, :parent
 
-  def initialize(comment_object)
-    @comment_object = comment_object
-    @username = get_username
-    @created_at = get_created_at
-    @body = get_body
-    @permalink = get_permalink
+  def initialize(comment)
+    @comment_hash = comment.class == Hash ? comment : {}
+    @comment_object = comment.class != Hash ? comment : nil
+    @username = @comment_hash.fetch(:username) { get_username }
+    @created_at = @comment_hash.fetch(:created_at){ get_created_at }
+    @body = @comment_hash.fetch(:body){ get_body }
+    @permalink = "https://news.ycombinator.com/?id=#{@comment_hash.fetch(:permalink) { get_permalink }}"
   end
 
   def get_username
-    @comment_object.search('.comhead > a:first-child').map{|name| name.inner_text}.join
+    @comment_object.search('.comhead > a:first-child').inner_text
   end
 
   def get_created_at
-    @comment_object.search('.comhead').map{|date| date.inner_text.gsub(/\A.+\s(\d+\s+.+)\| link/, '\1')}.join.strip
+    @comment_object.search('.comhead').inner_text.gsub!(/\A\S+ (\d+.+ago)\s+\| link/, '\1')
   end
 
   def get_permalink
-    @comment_object.search('.comhead > a:nth-child(2)').map {|link| "https://news.ycombinator.com/#{link['href']}"}.join
+    @comment_object.search('.comhead > a:nth-child(2)').to_s[/\d+/]
   end
 
   def get_body
-    @comment_object.search('.comment').map{|body| body.inner_text}.join
+    @comment_object.search('.comment').inner_text
   end
-
 end
 
-#.comhead first child, inner text = username
-# .comhead inner text = /\d* .* ago/
-posts = Post.new('post.html')
-p posts.item_id
+
+posts = Post.new
+posts.print
+local_posts = Post.new('post.html')
+local_posts.print
