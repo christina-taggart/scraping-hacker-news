@@ -1,20 +1,25 @@
 require 'nokogiri'
+require 'open-uri'
 
 class Post
   attr_reader :url, :page_object, :title, :points, :item_id, :comments
 
-  def initialize(url, page_object)
+  def initialize(url)
     @url = url
-    @page_object = page_object
+    create_page_object
     get_attributes
   end
 
   private
 
+    def create_page_object
+      @page_object = Nokogiri::HTML(open(@url))
+    end
+
     def get_attributes
       @title = get_title
       @points = get_points
-      @item_id = get_item_id
+      @item_id = get_post_id
       @comments = get_comments
     end
 
@@ -27,9 +32,8 @@ class Post
       (/^\d*/).match(points_text)[0].to_i
     end
 
-    def get_item_id
-      item_text = @page_object.search('.subtext > a')[1]['href']
-      (/\d*$/).match(item_text)[0].to_i
+    def get_post_id
+      /\d*$/.match(@url)[0].to_i
     end
 
     def get_comments
@@ -56,5 +60,7 @@ end
 
 ########## RUN PROGRAM ##########
 
-doc = Nokogiri::HTML(File.open('post.html'))
-taleb_post = Post.new('https://news.ycombinator.com/item?id=7064435', doc)
+url = ARGV[0]
+post = Post.new(url)
+
+
