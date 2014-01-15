@@ -1,6 +1,7 @@
 require 'nokogiri'
+require 'open-uri'
 
-$doc = Nokogiri::HTML(open('post.html'))
+#$doc = Nokogiri::HTML(open('post.html'))
 
 class Post
   attr_reader :title, :url, :points, :item_id
@@ -9,10 +10,11 @@ class Post
     @title =  post_doc.search('.title > a:first-child').map { |link| link.inner_text}.pop
     @url = post_doc.search('.title > a:first-child').map { |link| link['href']}.pop
     @points = post_doc.search('.subtext > span:first-child').map { |span| span.inner_text}.pop
+    @points = @points.match(/\d+/).to_s.to_i
     @item_id = post_doc.search('.subtext > a:nth-child(3)').map { |link| link['href']}.pop
     @item_id = @item_id.match(/\d+/).to_s.to_i
-    @all_comments = $doc.search('.comment')
-    @all_comheads = $doc.search('.comhead')
+    @all_comments = post_doc.search('.comment')
+    @all_comheads = post_doc.search('.comhead')
     @comments = Array.new
     create_comments
   end
@@ -27,6 +29,13 @@ class Post
 
   def comments
     @comments.each { |comment| comment.print }
+  end
+
+  def statistics
+    puts "---"
+    puts "POST ID: #{@item_id}"
+    puts "THIS POST HAS #{@comments.length} COMMENTS."
+    puts "THIS POST HAS #{@points} POINTS."
   end
 
   def add_comment(comment)
@@ -53,10 +62,8 @@ class Comment
   end
 end
 
-
-
 #-----DRIVERS-----
-our_post = Post.new($doc)
+# our_post = Post.new($doc)
 # p our_post.title
 # p our_post.url
 # p our_post.points
@@ -68,4 +75,11 @@ our_post = Post.new($doc)
 # p test_comment.text
 # p test_comment.item_id
 # p our_post.all_comments[0]
-our_post.comments
+# our_post.comments
+
+#-----ARGVifying our scraper-----
+link = ARGV[0]
+hn_page = Nokogiri::HTML(open(link))
+current_post = Post.new(hn_page)
+current_post.comments
+current_post.statistics
