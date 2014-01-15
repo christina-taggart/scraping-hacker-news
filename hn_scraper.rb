@@ -1,10 +1,11 @@
 require 'nokogiri'
+require 'open-uri'
 
 class Post
   attr_accessor  :url, :hn_post, :title, :item_id, :points
 
-  def initialize(url)
-    @url = url
+  def initialize(url=nil)
+    @url = ARGV[0].nil? ? open(url) : open(ARGV[0])
     @hn_post = Nokogiri::HTML(File.open(@url))
     @title = @hn_post.search('.title > a:first-child').text
     @item_id = @hn_post.search('a+span').first['id'].gsub(/\D/, '')
@@ -14,7 +15,8 @@ class Post
   end
 
   def display_comments
-    puts "Comments for this post:\n\n"
+    puts "Post Title: #{@title}\nPost Points: #{@points}"
+    puts "Item Id: #{@item_id}\nComments for this post:\n\n"
     @comments.each_with_index do |comment, idx|
       lines = []
       lines << comment.text.slice!(0, 80) until comment.text.empty?
@@ -51,10 +53,6 @@ class Comment
 end
 
 # Driver Code
-# hn_article_url = "https://news.ycombinator.com/item?id=6561358"
-hn_article_url = "html/post.html"
+hn_article_url = "https://news.ycombinator.com/item?id=6561358"
 hn_post = Post.new(hn_article_url)
-puts "Post Title: #{hn_post.title}"
-puts "Post Points: #{hn_post.points}"
-puts "Item Id: #{hn_post.item_id}"
 hn_post.display_comments
