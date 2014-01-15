@@ -1,14 +1,16 @@
 require 'nokogiri'
 require 'open-uri'
 
+
+
 # hacker_news = Nokogiri::HTML(open("https://news.ycombinator.com/"))
-post = Nokogiri::HTML(open("post.html")) do |config|
-  config.noblanks
+post = Nokogiri::HTML(open(ARGV[0])) do |config|
+  config
 end
 
-def extract_usernames(doc)
-  doc.search('.comhead > a:first-child').map {|element| element.inner_text }.uniq!
-end
+# post = Nokogiri::HTML(open("post.html")) do |config|
+#   config
+# end
 
 def extracting_something(doc)
   #doc.search('.subtext > span:first-child').map { |span| span.inner_text}
@@ -43,12 +45,28 @@ class Post
     @comment_list = doc.search('.comment > font:first-child').map { |font| font.inner_text}
   end
 
+  def number_of_comments
+    @comment_list.length
+  end
+
+  def find_post_title(doc)
+    @post_title = doc.search('.title > a:first-child').map { |link| link.inner_text}.join()
+  end
+
   def add_comment(comment)
     @comment_list << comment.text
   end
 
   def display_comment(number_in_list)
     @comment_list[number_in_list]
+  end
+
+  def extract_usernames(doc)
+    @user_names = doc.search('.comhead > a:first-child').map {|element| element.inner_text }.uniq!
+  end
+
+  def to_s
+    puts "Post title: #{@post_title}\nNumber of comments: #{@comment_list.length}\nList of commentors: #{@user_names}"
   end
 
 end
@@ -68,11 +86,9 @@ end
 
 
 new_post = Post.new
-new_comment = Comment.new("Spencer", "Darcey is super cool.")
+
 new_post.comments(post)
 
- new_post.add_comment(new_comment)
-
-puts new_post.display_comment(0)
-
-#puts post.class
+new_post.find_post_title(post)
+new_post.extract_usernames(post)
+new_post.to_s
