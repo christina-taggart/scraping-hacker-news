@@ -8,35 +8,45 @@ class Post
     @hn_post = Nokogiri::HTML(File.open(@url))
     @title = @hn_post.search('.title > a:first-child').text
     @item_id = @hn_post.search('a+span').first['id'].gsub(/\D/, '')
-    # @points = @hn_post.search()
+    @points = @hn_post.search("#score_#{@item_id}").text
+    @usernames = extract_usernames
     comments
   end
 
   def display_comments
-    puts "Comments for this post:"
-    @comments.each_with_index do |comment, idx| 
-      puts "#{idx+1}>\t#{comment.text}\n"
+    puts "Comments for this post:\n\n"
+    @comments.each_with_index do |comment, idx|
+      lines = []
+      lines << comment.text.slice!(0, 80) until comment.text.empty?
+      puts "#{idx+1}> #{comment.username}:\t"
+      lines.each { |line| puts line.gsub(/^ +/,'') }
+      puts
     end
   end
 
   private
   def comments
     @comments = []
-    @hn_post.search('.comment > font:first-child').map do |font|
-      add_comment(Comment.new(font.text))
+    @hn_post.search('.comment > font:first-child').map.with_index do |font, idx|
+      add_comment(Comment.new(font.text, @usernames[idx]))
     end
   end
 
   def add_comment(comment_obj)
     @comments << comment_obj
   end
+
+  def extract_usernames
+    @hn_post.search('.comhead > a:first-child').map { |element| element.inner_text }
+  end
 end
 
 class Comment
-  attr_accessor :text
+  attr_accessor :text, :username
 
-  def initialize(comment_text)
+  def initialize(comment_text, username)
     @text = comment_text
+    @username = username
   end
 end
 
@@ -48,4 +58,3 @@ puts "Post Title: #{hn_post.title}"
 puts "Post Points: #{hn_post.points}"
 puts "Item Id: #{hn_post.item_id}"
 hn_post.display_comments
-
