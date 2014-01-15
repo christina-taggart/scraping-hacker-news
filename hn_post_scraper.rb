@@ -3,7 +3,7 @@ require 'nokogiri'
 $doc = Nokogiri::HTML(open('post.html'))
 
 class Post
-  attr_reader :title, :url, :points, :item_id, :comments
+  attr_reader :title, :url, :points, :item_id
 
   def initialize(post_doc)
     @title =  post_doc.search('.title > a:first-child').map { |link| link.inner_text}.pop
@@ -25,6 +25,13 @@ class Post
     end
   end
 
+  def comments
+    @comments.each { |comment| comment.print }
+  end
+
+  def add_comment(comment)
+    @comments << comment
+  end
 end
 
 
@@ -36,6 +43,13 @@ class Comment
     @text = nokogiri_comment.inner_text
     @item_id = nokogiri_comhead.search('a:nth-child(2)')[0].attributes['href'].value
     @item_id = @item_id.match(/\d+/).to_s.to_i
+  end
+
+  def print
+    puts "user: #{@user}   item_id: #{@item_id}"
+    puts "---"
+    puts "#{@text}"
+    puts
   end
 end
 
@@ -54,4 +68,4 @@ our_post = Post.new($doc)
 # p test_comment.text
 # p test_comment.item_id
 # p our_post.all_comments[0]
-p our_post.comments[0]
+our_post.comments
