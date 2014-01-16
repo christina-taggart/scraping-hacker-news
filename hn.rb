@@ -2,11 +2,11 @@ require 'nokogiri'
 require 'open-uri'
 
 #doc = Nokogiri::HTML(File.open('post.html'))
-
+url = ARGV.join
 
 class Post
   attr_reader :title, :url, :points, :item_id, :doc, :user_id, :posts
-  def initialize(url = ARGV.join)
+  def initialize(url)
     @doc = Nokogiri::HTML(File.open(url))
     @title = title
     @url = url
@@ -78,7 +78,7 @@ end
 
 
 
-post = Post.new('post.html')
+post = Post.new(url)
 # newclass = Comment.new("nc", "hi there")
 p post.get_title
 p post.get_points
