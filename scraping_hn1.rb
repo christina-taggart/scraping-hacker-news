@@ -19,6 +19,7 @@ class Post
     @item_id = get_item_id
     @comments = get_comments
     @url = get_comments
+    @poster_names = get_poster_names
   end
 
   def get_title
@@ -67,23 +68,9 @@ class Comment
   end
 end
 
-test = Post.new('post.html')
-test
+url = ARGV[0]
+test = Post.new(url)
 
-
-
-
-
-
-# def extract_usernames
-#   doc = Nokogiri::HTML(File.open('post.html'))
-#   doc.search('.comhead > a:first-child').map do |element|
-#     element.inner_text
-#   end
-#   doc.search('.subtext > span:first-child').map { |span| span.inner_text} #=> 50 points
-#   doc.search('.subtext > a:nth-child(3)').map {|link| link['href'] } #=>item?id=5003980
-#   doc.search('.title > a:first-child').map { |link| link.inner_text} #=> A/B testing mistakes
-#   doc.search('.title > a:first-child').map { |link| link['href']} #=>"http://visualwebsiteoptimizer.com/split-testing-blog/seven-ab-testing-mistakes-to-stop-in-2013/"
-#   p doc.search('.comment > font:first-child').map { |font| font.inner_text} #=> Comment section text, all of it
-#   p doc.search('.comhead > a:first-child').map {|link| link.inner_text} #=> "Jasber", "jfarmer", "btilly", "jfarmer", "robrenaud", "jfarmer", "noelwelsh", "siddharthdeswal", "Angostura", "siddharthdeswal", "chc", "jfarmer", "mjw", "jfarmer", "friendofasquid", "marcosdumay", "orangethirty", "karolisd", names of commenters
-# end
+puts "the number of comments is : #{comments.length}"
+puts _________
+puts "the posters name is  #{@poster_names[0]}"
