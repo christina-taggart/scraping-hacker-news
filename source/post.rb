@@ -7,7 +7,7 @@ class Post
 
 	def initialize(url = nil)
 		@url = url || ARGV[0]
-		@document = url.nil? ? open(ARGV[0]) : Nokogiri::HTML(File.open(@url))
+		@document = url.nil? ? Nokogiri::HTML(File.read(open(ARGV[0]))) : Nokogiri::HTML(File.open(@url))
 		@points = parse_points
 		@title = parse_title
 		@item_id = parse_item_id
