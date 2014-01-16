@@ -1,4 +1,7 @@
 require 'nokogiri'
+# require 'open-uri'
+
+# html_file = open(ARGV[0])
 
 class Post
   attr_reader :title, :url, :points, :item_id, :doc
@@ -12,8 +15,11 @@ class Post
   end
 
   def comments
-    @comment_list << doc.search('.comment > font:first-child').map { |font| font.inner_text}
-    @comment_list.map! { |comment| Comment.new(comment) }
+
+    @comment_list = doc.search('.comment > font:first-child').map { |font| font.inner_text}
+    @comment_list.map!{ |comment| Comment.new(comment) }
+
+
   end
 
   def add_comment(comment)
@@ -29,14 +35,13 @@ class Comment
   end
 end
 
-
-
+#post = Post.new(Nokogiri::HTML(File.open(html_file)))
 post = Post.new(Nokogiri::HTML(File.open('post.html')))
 comment = Comment.new(post)
-post.add_comment(comment)
-p post.comments
+# post.add_comment(comment)
 
-p post.url
-p post.title
-p post.points
-p post.item_id
+post.comments
+p "Post title: " + "#{post.title}"
+p "Number of comments: " + "#{post.comments.length}"
+# p post.points
+# p post.item_id
