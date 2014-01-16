@@ -1,4 +1,5 @@
 require 'nokogiri'
+require 'open-uri'
 
  # doc.search('.subtext > span:first-child').map { |span| span.inner_text}
 
@@ -9,12 +10,13 @@ require 'nokogiri'
  # doc.search('.title > a:first-child').map { |link| link['href']}
 
 
-doc = Nokogiri::HTML(open('post.html')) do |config|
+site_to_scrape = Nokogiri::HTML(open(ARGV[0])) do |config|
   config
 end
 
 class Post
   attr_reader :title, :url, :points, :item_id
+  attr_accessor :comment_list
   def initialize
     @title = title
     @url = url
@@ -32,20 +34,33 @@ class Post
     @comment_list << new_comment.text
   end
 
+  def num_of_comments
+    puts "Number of comments: #{@comment_list.length}"
+  end
+
+  def post_title(doc)
+    @title = doc.search('.title > a:first-child').map { |link| link.inner_text}.join()
+    puts "Post title: #{@title}"
+  end
+
 end
 
 class Comment
-  attr_reader :user_id, :time, :item_id, :text
+  attr_reader :user, :date, :link, :text, :post
   def initialize(text)
-    @user_id = user_id
-    @time = time
-    @item_id = item_id
+    @user = user
+    @date = Time.now
+    @link = link
     @text = text
+    @post = post
   end
 end
 
 
 newthing = Post.new
-newthing.comments(doc)
+newthing.comments(site_to_scrape)
 newthing.add_comment(Comment.new("Here's the comment"))
+newthing.num_of_comments
+newthing.post_title(post.html)
+
 
