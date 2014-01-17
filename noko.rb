@@ -1,4 +1,11 @@
+require 'rubygems'
 require 'nokogiri'
+require 'open-uri'
+
+
+  # parse_url = ARGV[0].to_s
+  # p parse_url
+
 
 class Post
   def initialize(title, url, points, item_id)
@@ -27,7 +34,8 @@ class Comment
 end #ends comment class
 
 
-doc = Nokogiri::HTML(open('post.html'))
+doc = Nokogiri::HTML(open("post.html"))
+puts doc.class
 
 def extract_usernames(doc)
   doc.search('.comhead > a:first-child').map do |element|
@@ -45,7 +53,6 @@ commentors = extract_usernames(doc)
 
 # Creating new post object
 post_object = Post.new(title, url, points, item_id)
-p post_object.inspect
 
 
 # Filling Post object with comments
@@ -55,13 +62,11 @@ for i in (0..comment.length-1) do
 end
 
 my_new_comment = Comment.new("henry", "snowman")
-p my_new_comment
 
-
-p post_object
+# p post_object
 p "-----"
 post_object.add_comment(my_new_comment)
-p post_object
+# p post_object
 
 post_object.comments
 
