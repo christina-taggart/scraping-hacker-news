@@ -34,7 +34,7 @@ class Comment
 end #ends comment class
 
 
-doc = Nokogiri::HTML(open("post.html"))
+doc = Nokogiri::HTML(open("https://news.ycombinator.com/item?id=7073242"))
 puts doc.class
 
 def extract_usernames(doc)
